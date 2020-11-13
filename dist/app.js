@@ -55,12 +55,13 @@ class Server {
         // create routes 
         const api = new back_end_api_1.BackendApi();
         // test API 
-        router.get('/api/test', api.test.bind(api));
+        //router.get('/api', api.navigator.bind(api));
+        this.app.use('/api', api.navigator());
         // use router middleware 
         this.app.use(router);
         // Catch all other routes and return the index file 
         this.app.get('*', (req, res) => {
-            res.sendFile(path_1.default.join(__dirname, 'public/index.html'));
+            res.json({ message: 'not-found' });
         });
     }
 }
