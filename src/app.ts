@@ -1,10 +1,12 @@
-import express from 'express';
+import express, { NextFunction } from 'express';
 import mongoose from 'mongoose';
 import path from 'path';
 import http from 'http';
-import bodyParser from 'body-parser'
-import cookieParser from 'cookie-parser'
-import { BackendApi } from './routes/back-end-api';
+import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
+import { BackendApi } from './api/navigator';
+const cors = require('cors');
+
 
 class Server {
     public app: express.Application;
@@ -15,9 +17,27 @@ class Server {
 
     constructor() {
         this.app = express();
+        this.app.use(cors());
         this.config();
         this.routes();
         this.connectDb();
+    }
+
+    private setupSocketIO(server) {
+        const io = require('socket.io')(server);
+
+        io.on('connection', function (socket) {
+            console.log(`a user connected with id ${socket.id}`);
+            socket.on('delete-data', function (data) {
+                io.emit('new-data', { data: data });
+            });
+            socket.on('new-data', function (data) {
+                io.emit('new-data', { data: data });
+            });
+            socket.on('update-data', function (data) {
+                io.emit('update-data', { data: data });
+            });
+        });
     }
 
     private connectDb(): void {
@@ -48,6 +68,7 @@ class Server {
          * Create HTTP server. 
          */
         const server = http.createServer(this.app);
+        this.setupSocketIO(server)
 
         /** 
          * Listen on provided port, on all network interfaces. 
@@ -71,6 +92,7 @@ class Server {
         this.app.use(router);
 
         // Catch all other routes and return the index file 
+
         this.app.get('*', (req, res) => {
             res.json({ message: 'not-found' })
         });

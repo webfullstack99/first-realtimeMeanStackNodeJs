@@ -1,0 +1,1 @@
+{"version":3,"file":"back-end-api.js","sourceRoot":"","sources":["../../src/api/back-end-api.ts"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;;;AAAA,iDAAmC;AAEnC,MAAM,MAAM,GAAG,OAAO,CAAC,MAAM,EAAE,CAAC;AAChC,MAAa,UAAU;IAEZ,SAAS;QACZ,MAAM,CAAC,GAAG,CAAC,OAAO,EAAE,IAAI,CAAC,IAAI,CAAC,CAAC;QAC/B,OAAO,MAAM,CAAC;IAClB,CAAC;CACJ;AAND,gCAMC"}

@@ -8,16 +8,33 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const path_1 = __importDefault(require("path"));
 const http_1 = __importDefault(require("http"));
 const body_parser_1 = __importDefault(require("body-parser"));
-const back_end_api_1 = require("./routes/back-end-api");
+const navigator_1 = require("./api/navigator");
+const cors = require('cors');
 class Server {
     constructor() {
         this.app = express_1.default();
+        this.app.use(cors());
         this.config();
         this.routes();
         this.connectDb();
     }
     static bootstrap() {
         return new Server();
+    }
+    setupSocketIO(server) {
+        const io = require('socket.io')(server);
+        io.on('connection', function (socket) {
+            console.log(`a user connected with id ${socket.id}`);
+            socket.on('delete-data', function (data) {
+                io.emit('new-data', { data: data });
+            });
+            socket.on('new-data', function (data) {
+                io.emit('new-data', { data: data });
+            });
+            socket.on('update-data', function (data) {
+                io.emit('update-data', { data: data });
+            });
+        });
     }
     connectDb() {
         mongoose_1.default.connect(`mongodb+srv://webfullstack99:Loveguitar99@cluster0.mrjwz.gcp.mongodb.net/test?retryWrites=true&w=majority`, { useNewUrlParser: true });
@@ -43,6 +60,7 @@ class Server {
          * Create HTTP server.
          */
         const server = http_1.default.createServer(this.app);
+        this.setupSocketIO(server);
         /**
          * Listen on provided port, on all network interfaces.
          */
@@ -53,7 +71,7 @@ class Server {
         let router;
         router = express_1.default.Router();
         // create routes 
-        const api = new back_end_api_1.BackendApi();
+        const api = new navigator_1.BackendApi();
         // test API 
         //router.get('/api', api.navigator.bind(api));
         this.app.use('/api', api.navigator());
