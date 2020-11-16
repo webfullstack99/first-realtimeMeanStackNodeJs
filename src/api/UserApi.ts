@@ -21,7 +21,6 @@ export class UserApi {
         return router;
     }
 
-
     public getItem(req: express.Request, res: express.Response) {
         this.mainModel.getItemById(req.params.id, (err, result) => {
             if (!err) {

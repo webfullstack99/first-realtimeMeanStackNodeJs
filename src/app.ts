@@ -5,6 +5,8 @@ import http from 'http';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import { BackendApi } from './api/navigator';
+import { UserOnline } from './defines/UserOnline';
+import { OnlineUser } from './defines/OnlineUser';
 const cors = require('cors');
 
 
@@ -23,19 +25,29 @@ class Server {
         this.connectDb();
     }
 
+    // SOCKET IO
     private setupSocketIO(server) {
         const io = require('socket.io')(server);
+        let userOnline: UserOnline = new UserOnline();
 
         io.on('connection', function (socket) {
-            console.log(`a user connected with id ${socket.id}`);
-            socket.on('delete-data', function (data) {
-                io.emit('new-data', { data: data });
+            socket.on('client-connect', function (data) {
+                console.log(`user connected: ${socket.id}`, data);
+                io.emit('SERVER_RETURN_USER_ONLINE', userOnline.getData());
             });
-            socket.on('new-data', function (data) {
-                io.emit('new-data', { data: data });
+
+            socket.on('CLIENT_SEND_MESSAGE', function (data) {
+                if (!userOnline.checkUserExistBySocketId(socket.id)) {
+                    let onlineUser: OnlineUser = new OnlineUser(data.username, socket.id);
+                    userOnline.add(onlineUser);
+                    io.emit('SERVER_RETURN_USER_ONLINE', userOnline.getData());
+                }
+                io.emit('SERVER_RETURN_MESSAGE', data);
             });
-            socket.on('update-data', function (data) {
-                io.emit('update-data', { data: data });
+
+            socket.on('disconnect', function () {
+                userOnline.deleteItemBySocketId(socket.id);
+                io.emit('SERVER_RETURN_USER_ONLINE', userOnline.getData());
             });
         });
     }
